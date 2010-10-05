@@ -4,12 +4,10 @@ Early Prototype of a FatWire Content Server Tree Tab Java Applet Alternative
 
 # Install
 
-Place `MockTreeApplet.jsp` in root of `ElementCatalog`
+1. Place `MockTreeApplet.jsp` in root of `ElementCatalog`
 
-Create a `SiteCatalog` record with `MockTreeApplet.jsp` rootelement and disable pageletonly
+2. Create a `SiteCatalog` record with `MockTreeApplet.jsp` rootelement and disable pageletonly
 
-Place `getTabs.sql` and `getTabsSect.sql` in `MockTreeApplet` folder in `SystemSql`
-
-Create a bookmarklet!
+3. Create a bookmarklet!
 
 	javascript:void(parent['XcelWorkFrames']['XcelTree'].location.href='ContentServer?pagename=MockTreeApplet')
