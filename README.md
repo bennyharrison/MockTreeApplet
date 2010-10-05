@@ -10,6 +10,6 @@ Create a `SiteCatalog` record with `MockTreeApplet.jsp` rootelement and disable 
 
 Place `getTabs.sql` and `getTabsSect.sql` in `MockTreeApplet` folder in `SystemSql`
 
-Create a bookmarklet
+Create a bookmarklet!
 
 	javascript:void(parent['XcelWorkFrames']['XcelTree'].location.href='ContentServer?pagename=MockTreeApplet')
