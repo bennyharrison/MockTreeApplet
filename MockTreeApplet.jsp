@@ -21,6 +21,7 @@
 <head>
 	<ics:callelement element="OpenMarket/Xcelerate/UIFramework/StandardHeader"/>
 	<ics:callelement element="OpenMarket/Xcelerate/UIFramework/Util/SetStylesheet" />
+	
 	<style type="text/css">
 	HTML, BODY {padding:0px; margin:0px;}
 	IMG {float:left; margin-bottom:-1px; padding-right:5px;}
@@ -38,18 +39,15 @@
 	.expanded SPAN.iconminus {display:inline;}
 	.loading SPAN.iconplus {visibility:hidden;}
 	.loading SPAN.iconminus {visibility:hidden;}
-	
 	UL#tabs {float:left; width:100%; list-style:none; padding:0px; margin:0px; background-color:#CCC;}
 	UL#tabs LI {float:left; list-style:none; padding:3px; margin:0px; background-color:#EEE; color:black; border:1px solid #BBB; border-bottom:1px solid #000; border-top:1px solid #FFF; font-size:9px;}
 	UL#tabs LI A {color:black; text-decoration:none;}
 	UL#tabs LI.active {background-color:#FFF;}
-	 
 	DIV#tree {float:left; width:100%; height:100%; overflow:scroll; margin:0px -10px 0px 0px; padding:5px; border-top:1px solid #AAA;}
 	
 	</style>
 	
 	<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.2.min.js"></script>
-	<script type="text/javascript" src="http://www.javascripttoolbox.com/libsource.php/contextmenu/source/jquery.contextmenu.js"></script>
 	
 	<script type="text/javascript">
 	/**
@@ -131,16 +129,28 @@
 			$("#tree").append(TreeApplet.getLineItems(TreeApplet.jsonLoadURL($(this).val())));
 		})
 		
-		//alert("hi");
-		$("#tabs a").bind("click", function() { 
-			$.ajax({
-			  url: '/cs/ContentServer?pagename=OpenMarket/Gator/UIFramework/LoadTab&tabid='+$(this).attr("rel"),
-			  success: function(data) {
-				$("#tree").empty().append(TreeApplet.getLineItems(TreeApplet.jsonLoadURL(data)));
-			  }
-			});
-			return false; 
-		});
+		$("#tabs a").bind("click", function(e) { 
+			var $tab = $(this).closest('LI');
+			e.preventDefault();
+			
+			if(!$tab.hasClass('active')){
+				$tab.addClass('active').siblings().removeClass('active');
+			}
+			
+			if($(this).hasClass('history')){
+				$("#tree").empty()
+				//TODO
+			} else {
+				$.ajax({
+				  cache:false,
+				  url: '/cs/ContentServer?pagename=OpenMarket/Gator/UIFramework/LoadTab&tabid='+$(this).attr("rel"),
+				  success: function(data) {
+					$("#tree").empty().append(TreeApplet.getLineItems(TreeApplet.jsonLoadURL(data)));
+				  }
+				});	
+			}
+		})		
+		
 		
 		$("#tree").bind("mousedown", function(e){e.preventDefault();}); 
 		$("#tree").delegate(".selectable", "click", function(e) {
@@ -253,9 +263,8 @@
 				historyArr.push(DecodeUTF8(historyArr[item]));
 			}
 			
-			
-			//alert(historyArr.join("\nEND:3:END"))
-			
+			//TODO
+			console.log(historyArr);
 			return TreeApplet.jsonLoadURL(historyArr.join("END:3:END"))
 		},
 		createSearchNode:function(path, nodeData, tab, makeTabActive) {
@@ -561,10 +570,8 @@ var UTF8 = {
 IList sql;
 if(Utilities.goodString(ics.GetSSVar("currentpubACLs"))) {
 
-	ics.SetVar("roles", Utilities.replaceAll(ics.GetSSVar("currentpubACLs"), ",", "' OR cs_rolename = '"));
-	
-	//TODO, remove need to import SystemSQL
-	%><ics:callsql qryname='MockTreeApplet/getTabs' listname="sql" limit="5000" /><%
+	String roles = Utilities.replaceAll(ics.GetSSVar("currentpubACLs"), ",", "' OR cs_rolename = '");
+	%><ics:sql sql='<%="SELECT tt.id, tt.title FROM TreeTabs tt WHERE tt.id IN (SELECT ownerid FROM TreeTabs_Sites WHERE pubid = "+ics.GetSSVar("pubid")+" OR pubid = 0 OR pubid IS NULL) AND tt.id IN (SELECT cs_ownerid FROM TreeTabs_Roles WHERE cs_rolename IS NULL OR cs_rolename = '"+roles+"')"%>' listname="sql" table="TreeTabs" limit="5000" /><%
 	
 	sql = ics.GetList("sql", false);
 	if(sql != null && sql.hasData())
@@ -591,7 +598,7 @@ if(Utilities.goodString(ics.GetSSVar("currentpubACLs"))) {
 		className = "";
 		if("history".equals(ics.GetVar("tabid")))
 			className = " class=\"active\"";
-		out.print("<li"+className+"><a href=\"ContentServer?pagename=MockTreeApplet&amp;tabid=history\">History</a></li>");		
+		out.print("<li"+className+"><a class='history' href=\"ContentServer?pagename=MockTreeApplet&amp;tabid=history\">History</a></li>");		
 		
 		out.print("</ul>");
 
